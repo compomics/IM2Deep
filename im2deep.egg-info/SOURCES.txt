@@ -1,0 +1,16 @@
+LICENSE
+MANIFEST.in
+README.md
+pyproject.toml
+im2deep/__init__.py
+im2deep/__main__.py
+im2deep/_exceptions.py
+im2deep/im2deep.py
+im2deep/predict.py
+im2deep.egg-info/PKG-INFO
+im2deep.egg-info/SOURCES.txt
+im2deep.egg-info/dependency_links.txt
+im2deep.egg-info/entry_points.txt
+im2deep.egg-info/requires.txt
+im2deep.egg-info/top_level.txt
+im2deep/reference_data/peprec_CCS_with_index.csv
