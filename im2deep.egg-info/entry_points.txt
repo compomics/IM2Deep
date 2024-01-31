@@ -1,2 +1,0 @@
-[console_scripts]
-im2deep = im2deep.__main__:main
