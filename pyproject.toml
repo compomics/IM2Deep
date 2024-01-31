@@ -40,9 +40,7 @@ docs = [
 ]
 
 [project.urls]
-GitHub = "https://github.com/compomics/psm_utils"
-ReadTheDocs = "https://psm-utils.readthedocs.io"
-PyPi = "https://pypi.org/project/psm-utils/"
+GitHub = "https://github.com/rodvrees/IM2Deep"
 CompOmics = "https://www.compomics.com"
 
 [project.scripts]

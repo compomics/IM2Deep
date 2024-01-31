@@ -1,17 +1,11 @@
 import logging
-from pathlib import Path
 
-from deeplc import DeepLC
-from tensorflow.keras.models import load_model
 import numpy as np
 import pandas as pd
 from numpy import ndarray
 from psm_utils.peptidoform import Peptidoform
-from psm_utils import PSMList
-from psm_utils.io import peptide_record
 
 LOGGER = logging.getLogger(__name__)
-
 
 def im2ccs(reverse_im, mz, charge, mass_gas=28.013, temp=31.85, t_diff=273.15):
     """
@@ -38,7 +32,7 @@ def im2ccs(reverse_im, mz, charge, mass_gas=28.013, temp=31.85, t_diff=273.15):
 
 
 def get_ccs_shift(
-    df: pd.DataFrame, reference_dataset: pd.DataFrame, use_charge_state: int = 2
+    cal_df: pd.DataFrame, reference_dataset: pd.DataFrame, use_charge_state: int = 2
 ) -> float:
     """
     Calculate CCS shift factor, i.e. a constant offset,
@@ -46,7 +40,7 @@ def get_ccs_shift(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    cal_df : pd.DataFrame
         PSMs with CCS values.
     reference_dataset : pd.DataFrame
         Reference dataset with CCS values.
@@ -58,7 +52,7 @@ def get_ccs_shift(
     """
     LOGGER.debug(f"Using charge state {use_charge_state} for CCS shift calculation.")
 
-    tmp_df = df.copy(deep=True)
+    tmp_df = cal_df.copy(deep=True)
     tmp_ref_df = reference_dataset.copy(deep=True)
 
     tmp_df["sequence"] = tmp_df["peptidoform"].apply(lambda x: x.proforma.split("\\")[0])
@@ -81,15 +75,15 @@ def get_ccs_shift(
         suffixes=("_ref", "_data"),
     )
     LOGGER.debug(
-        "Calculating CCS shift based on {} overlapping peptide-charge pairs between PSMs and reference dataset".format(
-            both.shape[0]
-        )
+        """Calculating CCS shift based on {} overlapping peptide-charge pairs
+        between PSMs and reference dataset""".format(both.shape[0])
     )
+    # How much CCS in calibration data is larger than reference CCS, so predictions
+    # need to be increased by this amount
+    return 0 if both.shape[0] == 0 else np.mean(both["observed_ccs"] - both["CCS"])
 
-    return 0 if both.shape[0] == 0 else np.mean(both["CCS"] - both["ccs_observed"])
 
-
-def get_ccs_shift_per_charge(df: pd.DataFrame, reference_dataset: pd.DataFrame) -> ndarray:
+def get_ccs_shift_per_charge(cal_df: pd.DataFrame, reference_dataset: pd.DataFrame) -> ndarray:
     """
     Calculate CCS shift factor per charge state,
     i.e. a constant offset based on identical precursors as in reference.
@@ -107,7 +101,7 @@ def get_ccs_shift_per_charge(df: pd.DataFrame, reference_dataset: pd.DataFrame) 
         CCS shift factors per charge state.
 
     """
-    tmp_df = df.copy(deep=True)
+    tmp_df = cal_df.copy(deep=True)
     tmp_ref_df = reference_dataset.copy(deep=True)
 
     tmp_df["sequence"] = tmp_df["peptidoform"].apply(lambda x: x.proforma.split("\\")[0])
@@ -129,12 +123,11 @@ def get_ccs_shift_per_charge(df: pd.DataFrame, reference_dataset: pd.DataFrame) 
         how="inner",
         suffixes=("_ref", "_data"),
     )
-
-    return both.groupby("charge").apply(lambda x: np.mean(x["CCS"] - x["ccs_observed"])).to_dict()
+    return both.groupby("charge").apply(lambda x: np.mean(x["observed_ccs"] - x["CCS"])).to_dict()
 
 
 def calculate_ccs_shift(
-    psm_df: pd.DataFrame, reference_dataset: pd.DataFrame, per_charge=True
+    cal_df: pd.DataFrame, reference_dataset: pd.DataFrame, per_charge=True, use_charge_state=None
 ) -> float:
     """
     Apply CCS shift to CCS values.
@@ -144,32 +137,32 @@ def calculate_ccs_shift(
     psm_list : PSMList
 
     """
-    psm_df = psm_df[psm_df["charge"] < 5]  # predictions do not go higher for IM2Deep
-    high_conf_hits = list(psm_df["spectrum_id"][psm_df["score"].rank(pct=True) > 0.95])
-    LOGGER.debug(f"Number of high confidence hits for calculating shift: {len(high_conf_hits)}")
-
-    # Filter df for high_conf_hits
-    psm_df = psm_df[psm_df["spectrum_id"].isin(high_conf_hits)]
+    cal_df['charge'] = cal_df['peptidoform'].apply(lambda x: x.precursor_charge)
+    cal_df = cal_df[cal_df["charge"] < 5]  # predictions do not go higher for IM2Deep
+    # Filter df for high_conf_hits TODO: Check if possible, however this is necessary for MS2Rescore
+    # cal_df = cal_df[cal_df["spectrum_id"].isin(high_conf_hits)]
 
     if not per_charge:
         shift_factor = get_ccs_shift(
-            psm_df,
+            cal_df,
             reference_dataset,
+            use_charge_state=use_charge_state,
         )
         LOGGER.debug(f"CCS shift factor: {shift_factor}")
         return shift_factor
 
     else:
-        shift_factor_dict = get_ccs_shift_per_charge(
-            psm_df,
-            reference_dataset,
-        )
+        shift_factor_dict = get_ccs_shift_per_charge(cal_df, reference_dataset)
         LOGGER.debug(f"CCS shift factor dict: {shift_factor_dict}")
         return shift_factor_dict
 
 
 def linear_calibration(
-    psm_df: pd.DataFrame, reference_dataset: pd.DataFrame, per_charge=True
+    preds_df: pd.DataFrame,
+    calibration_dataset: pd.DataFrame,
+    reference_dataset: pd.DataFrame,
+    per_charge=True,
+    use_charge_state=None,
 ) -> pd.DataFrame:
     """
     Calibrate PSM df using linear calibration.
@@ -181,13 +174,20 @@ def linear_calibration(
 
     """
     LOGGER.info("Calibrating CCS values using linear calibration...")
+    preds_df["charge"] = preds_df["peptidoform"].apply(lambda x: x.precursor_charge)
     if per_charge:
-        shift_factor_dict = calculate_ccs_shift(psm_df, reference_dataset, per_charge=True)
-        psm_df["ccs_calibrated"] = psm_df.apply(
-            lambda x: x["ccs_observed"] + shift_factor_dict[x["charge"]], axis=1
+        shift_factor_dict = calculate_ccs_shift(
+            calibration_dataset, reference_dataset, per_charge=True
+        )
+        preds_df["predicted_ccs_calibrated"] = preds_df.apply(
+            lambda x: x["predicted_ccs"] + shift_factor_dict[x["charge"]], axis=1
         )
     else:
-        shift_factor = calculate_ccs_shift(psm_df, reference_dataset, per_charge=False)
-        psm_df["ccs_calibrated"] = psm_df.apply(lambda x: x["ccs_observed"] + shift_factor, axis=1)
+        shift_factor = calculate_ccs_shift(
+            preds_df, reference_dataset, per_charge=False, use_charge_state=use_charge_state
+        )
+        preds_df["predicted_ccs_calibrated"] = preds_df.apply(
+            lambda x: x["predicted_ccs"] + shift_factor, axis=1
+        )
     LOGGER.info("CCS values calibrated.")
-    return psm_df
+    return preds_df
