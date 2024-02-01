@@ -110,7 +110,6 @@ def main(
     """Command line interface to IM2Deep."""
     setup_logging(log_level)
     try:
-        #TODO: Add other arguments like calibrate_per_charge, use_charge_state, n_jobs
         run(psm_file, calibration_file, output_file, model_name, calibrate_per_charge, use_charge_state, n_jobs)
     except IM2DeepError as e:
         LOGGER.error(e)
@@ -137,7 +136,6 @@ def run(
         # Read input file
         df_pred = pd.read_csv(file_pred)
         df_pred.fillna("", inplace=True)
-        del file_pred
 
         list_of_psms = []
         for seq, mod, charge, ident in zip(
@@ -205,6 +203,20 @@ def run(
     LOGGER.info("Writing output file...")
     if file_pred_out:
         file_pred_out = open(file_pred_out, "w")
+        file_pred_out.write("seq,modifications,charge,predicted CCS\n")
+        for seq, mod, charge, ident, CCS in zip(
+            df_pred["seq"],
+            df_pred["modifications"],
+            df_pred["charge"],
+            df_pred.index,
+            calibrated_psm_list_pred_df["predicted_ccs_calibrated"],
+        ):
+            file_pred_out.write(f"{seq},{mod},{charge},{CCS}\n")
+        file_pred_out.close()
+    else:
+        file_pred_out_path = Path(file_pred)
+        file_pred_out_path.with_stem(file_pred_out_path.stem + "_predictions")
+        file_pred_out = open(file_pred_out_path, "w")
         file_pred_out.write("seq,modifications,charge,predicted CCS\n")
         for seq, mod, charge, ident, CCS in zip(
             df_pred["seq"],

@@ -1,2 +1,2 @@
-include im2deep/models/*
-include im2deep/reference_data/*
+include im2deep/models/**/*
+include im2deep/reference_data/**/*

@@ -23,7 +23,10 @@ dependencies = [
     "deeplc",
     "deeplcretrainer",
     "psm_utils",
-    "tensorflow>=2.2,<2.13.0"
+    "tensorflow>=2.2,<2.13.0",
+    "pandas",
+    "numpy",
+    "rich"
 ]
 
 [project.optional-dependencies]
@@ -49,6 +52,9 @@ im2deep = "im2deep.__main__:main"
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "im2deep.__version__"}
 
 [tool.isort]
 profile = "black"
