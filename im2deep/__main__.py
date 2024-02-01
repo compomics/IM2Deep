@@ -127,6 +127,7 @@ def run(
     n_jobs=None,
 ):
     """Run IM2Deep."""
+    LOGGER.info("IM2Deep started.")
     reference_dataset = pd.read_csv(REFERENCE_DATASET_PATH)
 
     with open(file_pred) as f:
@@ -198,7 +199,7 @@ def run(
     calibrated_psm_list_pred_df = linear_calibration(
         psm_list_pred_df,
         calibration_dataset=psm_list_cal_df,
-        reference_dataset=REFERENCE_DATASET,
+        reference_dataset=reference_dataset,
         per_charge=calibrate_per_charge,
         use_charge_state=use_charge_state,
     )
@@ -217,10 +218,11 @@ def run(
             file_pred_out.write(f"{seq},{mod},{charge},{CCS}\n")
         file_pred_out.close()
     else:
-        file_pred_out_path = Path(file_pred)
-        file_pred_out_path.with_stem(file_pred_out_path.stem + "_predictions")
-        file_pred_out = open(file_pred_out_path, "w")
-        file_pred_out.write("seq,modifications,charge,predicted CCS\n")
+        #Get path of psm file
+        output_file = Path(file_pred).parent / (Path(file_pred).stem + "_IM2Deep-predictions.csv")
+        LOGGER.info("Writing output file to %s", output_file)
+        output_file = open(output_file, "w")
+        output_file.write("seq,modifications,charge,predicted CCS\n")
         for seq, mod, charge, ident, CCS in zip(
             df_pred["seq"],
             df_pred["modifications"],
@@ -228,8 +230,8 @@ def run(
             df_pred.index,
             calibrated_psm_list_pred_df["predicted_ccs_calibrated"],
         ):
-            file_pred_out.write(f"{seq},{mod},{charge},{CCS}\n")
-        file_pred_out.close()
+            output_file.write(f"{seq},{mod},{charge},{CCS}\n")
+        output_file.close()
 
     LOGGER.info("IM2Deep finished!")
 
