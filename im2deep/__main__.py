@@ -20,7 +20,8 @@ from rich.logging import RichHandler
 from im2deep._exceptions import IM2DeepError
 from im2deep.calibrate import linear_calibration
 
-REFERENCE_DATASET = pd.read_csv(Path(__file__).parent / "reference_data" / "reference_ccs.zip")
+REFERENCE_DATASET_PATH = Path(__file__).parent / "reference_data" / "reference_ccs.zip"
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -126,6 +127,8 @@ def run(
     n_jobs=None,
 ):
     """Run IM2Deep."""
+    reference_dataset = pd.read_csv(REFERENCE_DATASET_PATH)
+
     with open(file_pred) as f:
         first_line_pred = f.readline().strip()
     if file_cal:
