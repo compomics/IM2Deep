@@ -78,9 +78,10 @@ def get_ccs_shift(
         """Calculating CCS shift based on {} overlapping peptide-charge pairs
         between PSMs and reference dataset""".format(both.shape[0])
     )
+    LOGGER.debug(both.columns)
     # How much CCS in calibration data is larger than reference CCS, so predictions
     # need to be increased by this amount
-    return 0 if both.shape[0] == 0 else np.mean(both["observed_ccs"] - both["CCS"])
+    return 0 if both.shape[0] == 0 else np.mean(both["ccs_observed"] - both["CCS"])
 
 
 def get_ccs_shift_per_charge(cal_df: pd.DataFrame, reference_dataset: pd.DataFrame) -> ndarray:
@@ -123,7 +124,7 @@ def get_ccs_shift_per_charge(cal_df: pd.DataFrame, reference_dataset: pd.DataFra
         how="inner",
         suffixes=("_ref", "_data"),
     )
-    return both.groupby("charge").apply(lambda x: np.mean(x["observed_ccs"] - x["CCS"])).to_dict()
+    return both.groupby("charge").apply(lambda x: np.mean(x["ccs_observed"] - x["CCS"])).to_dict()
 
 
 def calculate_ccs_shift(
@@ -184,7 +185,7 @@ def linear_calibration(
         )
     else:
         shift_factor = calculate_ccs_shift(
-            preds_df, reference_dataset, per_charge=False, use_charge_state=use_charge_state
+            calibration_dataset, reference_dataset, per_charge=False, use_charge_state=use_charge_state
         )
         preds_df["predicted_ccs_calibrated"] = preds_df.apply(
             lambda x: x["predicted_ccs"] + shift_factor, axis=1
