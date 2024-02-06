@@ -177,9 +177,17 @@ def linear_calibration(
     LOGGER.info("Calibrating CCS values using linear calibration...")
     preds_df["charge"] = preds_df["peptidoform"].apply(lambda x: x.precursor_charge)
     if per_charge:
+        general_shift = calculate_ccs_shift(
+            calibration_dataset, reference_dataset, per_charge=False, use_charge_state=use_charge_state
+        )
         shift_factor_dict = calculate_ccs_shift(
             calibration_dataset, reference_dataset, per_charge=True
         )
+        for charge in preds_df["charge"].unique():
+            if charge not in shift_factor_dict:
+                LOGGER.info("No overlapping precursors for charge state {}. Using overall shift factor for precursors with that charge.".format(charge))
+                shift_factor_dict[charge] = general_shift
+        LOGGER.info("Shift factors per charge: {}".format(shift_factor_dict))
         preds_df["predicted_ccs_calibrated"] = preds_df.apply(
             lambda x: x["predicted_ccs"] + shift_factor_dict[x["charge"]], axis=1
         )
