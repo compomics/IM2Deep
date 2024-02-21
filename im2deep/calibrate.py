@@ -9,22 +9,28 @@ LOGGER = logging.getLogger(__name__)
 
 def im2ccs(reverse_im, mz, charge, mass_gas=28.013, temp=31.85, t_diff=273.15):
     """
-    Convert ion mobility to CCS.  #TODO: Took this from ionmob. how to reference?
+    Convert ion mobility to collisional cross section.
 
     Parameters
     ----------
-    reverse_im : float
+    reverse_im
         Reduced ion mobility.
-    mz : float
+    mz
         Precursor m/z.
-    charge : int
+    charge
         Precursor charge.
-    mass_gas : float, optional
-        Mass of gas, by default 28.013
-    temp : float, optional
-        Temperature in Celsius, by default 31.85
-    t_diff : float, optional
-        Factor to convert Celsius to Kelvin, by default 273.15"""
+    mass_gas
+        Mass of gas, default 28.013
+    temp
+        Temperature in Celsius, default 31.85
+    t_diff
+        Factor to convert Celsius to Kelvin, default 273.15
+
+    Notes
+    -----
+    Adapted from theGreatHerrLebert/ionmob (https://doi.org/10.1093/bioinformatics/btad486)
+
+    """
 
     SUMMARY_CONSTANT = 18509.8632163405
     reduced_mass = (mz * charge * mass_gas) / (mz * charge + mass_gas)
@@ -40,13 +46,13 @@ def get_ccs_shift(
 
     Parameters
     ----------
-    cal_df : pd.DataFrame
+    cal_df
         PSMs with CCS values.
-    reference_dataset : pd.DataFrame
+    reference_dataset
         Reference dataset with CCS values.
-    use_charge_state : int, optional
+    use_charge_state
         Charge state to use for CCS shift calculation, needs to be [2,4], by default 2.
-    return_shift_factor : float
+    return_shift_factor
         CCS shift factor.
 
     """
@@ -91,9 +97,9 @@ def get_ccs_shift_per_charge(cal_df: pd.DataFrame, reference_dataset: pd.DataFra
 
     Parameters
     ----------
-    df : pd.DataFrame
+    cal_df
         PSMs with CCS values.
-    reference_dataset : pd.DataFrame
+    reference_dataset
         Reference dataset with CCS values.
 
     Returns
@@ -135,7 +141,19 @@ def calculate_ccs_shift(
 
     Parameters
     ----------
-    psm_list : PSMList
+    cal_df
+        PSMs with CCS values.
+    reference_dataset
+        Reference dataset with CCS values.
+    per_charge
+        Whether to calculate shift factor per charge state, default True.
+    use_charge_state
+        Charge state to use for CCS shift calculation, needs to be [2,4], by default None.
+
+    Returns
+    -------
+    float
+        CCS shift factor.
 
     """
     cal_df['charge'] = cal_df['peptidoform'].apply(lambda x: x.precursor_charge)
@@ -162,16 +180,29 @@ def linear_calibration(
     preds_df: pd.DataFrame,
     calibration_dataset: pd.DataFrame,
     reference_dataset: pd.DataFrame,
-    per_charge=True,
-    use_charge_state=None,
+    per_charge: bool = True,
+    use_charge_state: bool = None,
 ) -> pd.DataFrame:
     """
     Calibrate PSM df using linear calibration.
 
     Parameters
     ----------
-    psm_df : pd.DataFrame
-
+    preds_df
+        PSMs with CCS values.
+    calibration_dataset
+        Calibration dataset with CCS values.
+    reference_dataset
+        Reference dataset with CCS values.
+    per_charge
+        Whether to calculate shift factor per charge state, default True.
+    use_charge_state
+        Charge state to use for CCS shift calculation, needs to be [2,4], by default None.
+        
+    Returns
+    -------
+    pd.DataFrame
+        PSMs with calibrated CCS values.
 
     """
     LOGGER.info("Calibrating CCS values using linear calibration...")
