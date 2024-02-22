@@ -11,7 +11,7 @@ Install with pip:
 `pip install im2deep`
 
 ## Usage
-Basic CLI usage:
+### Basic CLI usage:
 ```sh
 im2deep <path/to/peptide_file.csv>
 ```
@@ -22,5 +22,23 @@ im2deep <path/to/peptide_file.csv> --calibration_file <path/to/peptide_file_with
 For an overview of all CLI arguments, run `im2deep --help`.
 
 ## Input files
-TODO
+Both peptide and calibration files are expected to be comma-separated values (CSV) with the following columns:
+  - `seq`: unmodified peptide sequence
+  - `modifications`: every modifications should be listed as `location|name`, separated by a pipe character (`|`)
+     between the location, the name, and other modifications. `location` is an integer counted starting at 1 for the
+     first AA. 0 is reserved for N-terminal modifications, -1 for C-terminal modifications. `name` has to correspond
+     to a Unimod (PSI-MS) name.
+  -  `CCS`: collisional cross-section (only for calibration file)
+
+For example:
+
+```csv
+seq,modifications,CCS
+VVDDFADITTPLK,,2,422.9984309464991
+GVEVLSLTPSFMDIPEK,12|Oxidation,2,464.6568644356109
+SYSGREFDDLSPTEQK,,2,468.9863221739147
+SYSQSILLDLTDNR,,2,460.9340710819608
+DEELIHLDGK,,2,383.8693416055445
+IPQEKCILQTDVK,5|Butyryl|6|Carbamidomethyl,3,516.2079366048176
+```
 
