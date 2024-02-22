@@ -35,7 +35,7 @@ Both peptide and calibration files are expected to be comma-separated values (CS
 For example:
 
 ```csv
-seq,modifications,CCS
+seq,modifications,charge,CCS
 VVDDFADITTPLK,,2,422.9984309464991
 GVEVLSLTPSFMDIPEK,12|Oxidation,2,464.6568644356109
 SYSGREFDDLSPTEQK,,2,468.9863221739147
