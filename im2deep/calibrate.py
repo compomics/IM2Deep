@@ -157,9 +157,7 @@ def calculate_ccs_shift(
 
     """
     cal_df['charge'] = cal_df['peptidoform'].apply(lambda x: x.precursor_charge)
-    cal_df = cal_df[cal_df["charge"] < 5]  # predictions do not go higher for IM2Deep
-    # Filter df for high_conf_hits TODO: Check if possible, however this is necessary for MS2Rescore
-    # cal_df = cal_df[cal_df["spectrum_id"].isin(high_conf_hits)]
+    cal_df = cal_df[cal_df["charge"] < 7]  # predictions do not go higher for IM2Deep
 
     if not per_charge:
         shift_factor = get_ccs_shift(
@@ -198,7 +196,7 @@ def linear_calibration(
         Whether to calculate shift factor per charge state, default True.
     use_charge_state
         Charge state to use for CCS shift calculation, needs to be [2,4], by default None.
-        
+
     Returns
     -------
     pd.DataFrame
