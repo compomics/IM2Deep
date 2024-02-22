@@ -29,7 +29,8 @@ Both peptide and calibration files are expected to be comma-separated values (CS
      between the location, the name, and other modifications. `location` is an integer counted starting at 1 for the
      first AA. 0 is reserved for N-terminal modifications, -1 for C-terminal modifications. `name` has to correspond
      to a Unimod (PSI-MS) name.
-  -  `CCS`: collisional cross-section (only for calibration file)
+  - `charge`: peptide precursor charge
+  - `CCS`: collisional cross-section (only for calibration file)
 
 For example:
 
