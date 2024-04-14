@@ -1,3 +1,3 @@
 """IM2Deep: Deep learning framework for peptide collisional cross section prediction."""
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
