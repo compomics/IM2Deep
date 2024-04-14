@@ -20,6 +20,7 @@ def predict_ccs(
     model_name="tims",
     calibrate_per_charge=True,
     use_charge_state=2,
+    use_single_model=False,
     n_jobs=None,
     write_output=True,
 ):
@@ -31,6 +32,8 @@ def predict_ccs(
         path_model = Path(__file__).parent / "models" / "TIMS"
 
     path_model_list = list(path_model.glob("*.hdf5"))
+    if use_single_model:
+        path_model_list = [path_model_list[0]]
 
     dlc = DeepLC(path_model=path_model_list, n_jobs=n_jobs, predict_ccs=True)
     LOGGER.info("Predicting CCS values...")
