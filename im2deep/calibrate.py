@@ -84,7 +84,7 @@ def get_ccs_shift(
         """Calculating CCS shift based on {} overlapping peptide-charge pairs
         between PSMs and reference dataset""".format(both.shape[0])
     )
-    LOGGER.debug(both.columns)
+
     # How much CCS in calibration data is larger than reference CCS, so predictions
     # need to be increased by this amount
     return 0 if both.shape[0] == 0 else np.mean(both["ccs_observed"] - both["CCS"])

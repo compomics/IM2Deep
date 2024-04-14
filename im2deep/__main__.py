@@ -101,6 +101,13 @@ def setup_logging(passed_level):
     default=2,
     help="Charge state to use for calibration. Only used if calibrate_per_charge is set to False.",
 )
+@click.option(
+    "--use_single_model",
+    type=click.BOOL,
+    default=False,
+    help="Use a single model for prediction.",
+)
+
 def main(
     psm_file: str,
     calibration_file: Optional[str] = None,
@@ -108,6 +115,7 @@ def main(
     model_name: Optional[str] = "tims",
     log_level: Optional[str] = "info",
     n_jobs: Optional[int] = None,
+    use_single_model: Optional[bool] = False,
     calibrate_per_charge: Optional[bool] = True,
     use_charge_state: Optional[int] = 2,
 ):
@@ -185,6 +193,7 @@ def main(
             calibrate_per_charge=calibrate_per_charge,
             use_charge_state=use_charge_state,
             n_jobs=n_jobs,
+            use_single_model=use_single_model,
         )
     except IM2DeepError as e:
         LOGGER.error(e)
