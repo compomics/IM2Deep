@@ -1,4 +1,4 @@
-"""DeepLC exceptions."""
+"""IM2Deep exceptions."""
 
 class IM2DeepError(Exception):
     pass
