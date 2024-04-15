@@ -104,10 +104,9 @@ def setup_logging(passed_level):
 @click.option(
     "--use_single_model",
     type=click.BOOL,
-    default=False,
+    default=True,
     help="Use a single model for prediction.",
 )
-
 def main(
     psm_file: str,
     calibration_file: Optional[str] = None,
@@ -115,7 +114,7 @@ def main(
     model_name: Optional[str] = "tims",
     log_level: Optional[str] = "info",
     n_jobs: Optional[int] = None,
-    use_single_model: Optional[bool] = False,
+    use_single_model: Optional[bool] = True,
     calibrate_per_charge: Optional[bool] = True,
     use_charge_state: Optional[int] = 2,
 ):
@@ -156,31 +155,38 @@ def main(
         and "modifications" in first_line_cal.split(",")
         and "seq" in first_line_cal.split(",")
     ):
-        df_cal = pd.read_csv(calibration_file)
-        df_cal.fillna("", inplace=True)
-        del calibration_file
+        try:
+            df_cal = pd.read_csv(calibration_file)
+            df_cal.fillna("", inplace=True)
+            del calibration_file
 
-        list_of_cal_psms = []
-        for seq, mod, charge, ident, CCS in zip(
-            df_cal["seq"],
-            df_cal["modifications"],
-            df_cal["charge"],
-            df_cal.index,
-            df_cal["CCS"],
-        ):
-            list_of_cal_psms.append(
-                PSM(peptidoform=peprec_to_proforma(seq, mod, charge), spectrum_id=ident)
+            list_of_cal_psms = []
+            for seq, mod, charge, ident, CCS in zip(
+                df_cal["seq"],
+                df_cal["modifications"],
+                df_cal["charge"],
+                df_cal.index,
+                df_cal["CCS"],
+            ):
+                list_of_cal_psms.append(
+                    PSM(peptidoform=peprec_to_proforma(seq, mod, charge), spectrum_id=ident)
+                )
+            psm_list_cal = PSMList(psm_list=list_of_cal_psms)
+            psm_list_cal_df = psm_list_cal.to_dataframe()
+            psm_list_cal_df["ccs_observed"] = df_cal["CCS"]
+            del df_cal
+
+        except IOError:
+            LOGGER.error(
+                "Invalid calibration file. Please check the format of the calibration file."
             )
-        psm_list_cal = PSMList(psm_list=list_of_cal_psms)
-        psm_list_cal_df = psm_list_cal.to_dataframe()
-        psm_list_cal_df["ccs_observed"] = df_cal["CCS"]
-        del df_cal
+            sys.exit(1)
 
     else:
-        LOGGER.error(
-            "Invalid calibration file. Please check the format of the calibration file."
+        LOGGER.warning(
+            "No calibration file found. Proceeding without calibration. Calibration is HIGHLY recommended for accurate CCS prediction."
         )
-        sys.exit(1)
+        psm_list_cal_df = None
 
     if not output_file:
         output_file = Path(psm_file).parent / (Path(psm_file).stem + "_IM2Deep-predictions.csv")

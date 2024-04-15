@@ -20,7 +20,7 @@ def predict_ccs(
     model_name="tims",
     calibrate_per_charge=True,
     use_charge_state=2,
-    use_single_model=False,
+    use_single_model=True,
     n_jobs=None,
     write_output=True,
 ):
@@ -33,7 +33,7 @@ def predict_ccs(
 
     path_model_list = list(path_model.glob("*.hdf5"))
     if use_single_model:
-        path_model_list = [path_model_list[0]]
+        path_model_list = [path_model_list[1]]
 
     dlc = DeepLC(path_model=path_model_list, n_jobs=n_jobs, predict_ccs=True)
     LOGGER.info("Predicting CCS values...")
@@ -41,25 +41,32 @@ def predict_ccs(
     LOGGER.info("CCS values predicted.")
     psm_list_pred_df = psm_list_pred.to_dataframe()
     psm_list_pred_df["predicted_ccs"] = preds
-
-    calibrated_psm_list_pred_df = linear_calibration(
-        psm_list_pred_df,
-        calibration_dataset=psm_list_cal_df,
-        reference_dataset=reference_dataset,
-        per_charge=calibrate_per_charge,
-        use_charge_state=use_charge_state,
+    psm_list_pred_df["charge"] = psm_list_pred_df["peptidoform"].apply(
+        lambda x: x.precursor_charge
     )
+
+    if psm_list_cal_df is not None:
+        psm_list_pred_df = linear_calibration(
+            psm_list_pred_df,
+            calibration_dataset=psm_list_cal_df,
+            reference_dataset=reference_dataset,
+            per_charge=calibrate_per_charge,
+            use_charge_state=use_charge_state,
+        )
+
+    LOGGER.debug(psm_list_pred_df)
     if write_output:
         LOGGER.info("Writing output file...")
         output_file = open(output_file, "w")
         output_file.write("seq,modifications,charge,predicted CCS\n")
         for peptidoform, charge, CCS in zip(
-            calibrated_psm_list_pred_df["peptidoform"],
-            calibrated_psm_list_pred_df["charge"],
-            calibrated_psm_list_pred_df["predicted_ccs_calibrated"],
+            psm_list_pred_df["peptidoform"],
+            psm_list_pred_df["charge"],
+            psm_list_pred_df["predicted_ccs"],
         ):
             output_file.write(f"{peptidoform},{charge},{CCS}\n")
         output_file.close()
 
     LOGGER.info("IM2Deep finished!")
-    return calibrated_psm_list_pred_df["predicted_ccs_calibrated"]
+
+    return psm_list_pred_df["predicted_ccs"]

@@ -7,6 +7,7 @@ from psm_utils.peptidoform import Peptidoform
 
 LOGGER = logging.getLogger(__name__)
 
+
 def im2ccs(reverse_im, mz, charge, mass_gas=28.013, temp=31.85, t_diff=273.15):
     """
     Convert ion mobility to collisional cross section.
@@ -82,7 +83,9 @@ def get_ccs_shift(
     )
     LOGGER.debug(
         """Calculating CCS shift based on {} overlapping peptide-charge pairs
-        between PSMs and reference dataset""".format(both.shape[0])
+        between PSMs and reference dataset""".format(
+            both.shape[0]
+        )
     )
 
     # How much CCS in calibration data is larger than reference CCS, so predictions
@@ -156,7 +159,7 @@ def calculate_ccs_shift(
         CCS shift factor.
 
     """
-    cal_df['charge'] = cal_df['peptidoform'].apply(lambda x: x.precursor_charge)
+    cal_df["charge"] = cal_df["peptidoform"].apply(lambda x: x.precursor_charge)
     cal_df = cal_df[cal_df["charge"] < 7]  # predictions do not go higher for IM2Deep
 
     if not per_charge:
@@ -204,27 +207,36 @@ def linear_calibration(
 
     """
     LOGGER.info("Calibrating CCS values using linear calibration...")
-    preds_df["charge"] = preds_df["peptidoform"].apply(lambda x: x.precursor_charge)
     if per_charge:
         general_shift = calculate_ccs_shift(
-            calibration_dataset, reference_dataset, per_charge=False, use_charge_state=use_charge_state
+            calibration_dataset,
+            reference_dataset,
+            per_charge=False,
+            use_charge_state=use_charge_state,
         )
         shift_factor_dict = calculate_ccs_shift(
             calibration_dataset, reference_dataset, per_charge=True
         )
         for charge in preds_df["charge"].unique():
             if charge not in shift_factor_dict:
-                LOGGER.info("No overlapping precursors for charge state {}. Using overall shift factor for precursors with that charge.".format(charge))
+                LOGGER.info(
+                    "No overlapping precursors for charge state {}. Using overall shift factor for precursors with that charge.".format(
+                        charge
+                    )
+                )
                 shift_factor_dict[charge] = general_shift
         LOGGER.info("Shift factors per charge: {}".format(shift_factor_dict))
-        preds_df["predicted_ccs_calibrated"] = preds_df.apply(
+        preds_df["predicted_ccs"] = preds_df.apply(
             lambda x: x["predicted_ccs"] + shift_factor_dict[x["charge"]], axis=1
         )
     else:
         shift_factor = calculate_ccs_shift(
-            calibration_dataset, reference_dataset, per_charge=False, use_charge_state=use_charge_state
+            calibration_dataset,
+            reference_dataset,
+            per_charge=False,
+            use_charge_state=use_charge_state,
         )
-        preds_df["predicted_ccs_calibrated"] = preds_df.apply(
+        preds_df["predicted_ccs"] = preds_df.apply(
             lambda x: x["predicted_ccs"] + shift_factor, axis=1
         )
     LOGGER.info("CCS values calibrated.")
