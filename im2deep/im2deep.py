@@ -33,7 +33,8 @@ def predict_ccs(
 
     path_model_list = list(path_model.glob("*.hdf5"))
     if use_single_model:
-        path_model_list = [path_model_list[1]]
+        LOGGER.debug("Using model {}".format(path_model_list[2]))
+        path_model_list = [path_model_list[2]]
 
     dlc = DeepLC(path_model=path_model_list, n_jobs=n_jobs, predict_ccs=True)
     LOGGER.info("Predicting CCS values...")
@@ -54,7 +55,6 @@ def predict_ccs(
             use_charge_state=use_charge_state,
         )
 
-    LOGGER.debug(psm_list_pred_df)
     if write_output:
         LOGGER.info("Writing output file...")
         output_file = open(output_file, "w")
