@@ -58,7 +58,7 @@ def predict_ccs(
     if write_output:
         LOGGER.info("Writing output file...")
         output_file = open(output_file, "w")
-        output_file.write("seq,modifications,charge,predicted CCS\n")
+        output_file.write("modified_seq,charge,predicted CCS\n")
         for peptidoform, charge, CCS in zip(
             psm_list_pred_df["peptidoform"],
             psm_list_pred_df["charge"],
