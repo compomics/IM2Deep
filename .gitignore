@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 385d700 (checkout dev)
 # Others
 nbs/
 .prettierrc
@@ -110,6 +113,7 @@ ENV/
 .pytest_cache/
 IM2Deep.code-workspace
 
+<<<<<<< HEAD
 # Testing
 test_data/
 =======
@@ -227,3 +231,10 @@ IM2Deep.code-workspace
 # Testing purposes
 test_data/
 >>>>>>> c874758 (use_single_model argument extra information)
+=======
+# Testing purposes
+test_data/
+
+# Testing purposes
+test_data/
+>>>>>>> 385d700 (checkout dev)
