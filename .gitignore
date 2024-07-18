@@ -108,3 +108,6 @@ ENV/
 .vscode/
 .pytest_cache/
 IM2Deep.code-workspace
+
+# Testing purposes
+test_data/

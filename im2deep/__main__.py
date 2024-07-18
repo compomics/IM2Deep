@@ -93,7 +93,7 @@ def setup_logging(passed_level):
     "--calibrate_per_charge",
     type=click.BOOL,
     default=True,
-    help="Calibrate CCS values per charge state.",
+    help="Calibrate CCS values per charge state. Default is True.",
 )
 @click.option(
     "--use_charge_state",
@@ -105,7 +105,7 @@ def setup_logging(passed_level):
     "--use_single_model",
     type=click.BOOL,
     default=True,
-    help="Use a single model for prediction.",
+    help="Use a single model for prediction. If False, an ensemble of models will be used, which may slightly improve prediction accuracy but increase runtimes. Default is True.",
 )
 def main(
     psm_file: str,
