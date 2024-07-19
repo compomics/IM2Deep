@@ -8,36 +8,6 @@ from psm_utils.peptidoform import Peptidoform
 LOGGER = logging.getLogger(__name__)
 
 
-def im2ccs(reverse_im, mz, charge, mass_gas=28.013, temp=31.85, t_diff=273.15):
-    """
-    Convert ion mobility to collisional cross section.
-
-    Parameters
-    ----------
-    reverse_im
-        Reduced ion mobility.
-    mz
-        Precursor m/z.
-    charge
-        Precursor charge.
-    mass_gas
-        Mass of gas, default 28.013
-    temp
-        Temperature in Celsius, default 31.85
-    t_diff
-        Factor to convert Celsius to Kelvin, default 273.15
-
-    Notes
-    -----
-    Adapted from theGreatHerrLebert/ionmob (https://doi.org/10.1093/bioinformatics/btad486)
-
-    """
-
-    SUMMARY_CONSTANT = 18509.8632163405
-    reduced_mass = (mz * charge * mass_gas) / (mz * charge + mass_gas)
-    return (SUMMARY_CONSTANT * charge) / (np.sqrt(reduced_mass * (temp + t_diff)) * 1 / reverse_im)
-
-
 def get_ccs_shift(
     cal_df: pd.DataFrame, reference_dataset: pd.DataFrame, use_charge_state: int = 2
 ) -> float:
@@ -180,26 +150,32 @@ def linear_calibration(
 
     """
     LOGGER.info("Calibrating CCS values using linear calibration...")
-    calibration_dataset['sequence'] = calibration_dataset['peptidoform'].apply(lambda x: x.proforma.split("\\")[0])
-    calibration_dataset['charge'] = calibration_dataset['peptidoform'].apply(lambda x: x.precursor_charge)
+    calibration_dataset["sequence"] = calibration_dataset["peptidoform"].apply(
+        lambda x: x.proforma.split("\\")[0]
+    )
+    calibration_dataset["charge"] = calibration_dataset["peptidoform"].apply(
+        lambda x: x.precursor_charge
+    )
     # reference_dataset['sequence'] = reference_dataset['peptidoform'].apply(lambda x: x.split('/')[0])
-    reference_dataset['charge'] = reference_dataset['peptidoform'].apply(lambda x: int(x.split('/')[1]))
+    reference_dataset["charge"] = reference_dataset["peptidoform"].apply(
+        lambda x: int(x.split("/")[1])
+    )
 
     if per_charge:
-        LOGGER.info('Getting general shift factor')
+        LOGGER.info("Getting general shift factor")
         general_shift = calculate_ccs_shift(
             calibration_dataset,
             reference_dataset,
             per_charge=False,
             use_charge_state=use_charge_state,
         )
-        LOGGER.info('Getting shift factors per charge state')
+        LOGGER.info("Getting shift factors per charge state")
         shift_factor_dict = calculate_ccs_shift(
             calibration_dataset, reference_dataset, per_charge=True
         )
 
-        preds_df['shift'] = preds_df['charge'].map(shift_factor_dict).fillna(general_shift)
-        preds_df['predicted_ccs'] = preds_df['predicted_ccs'] + preds_df['shift']
+        preds_df["shift"] = preds_df["charge"].map(shift_factor_dict).fillna(general_shift)
+        preds_df["predicted_ccs"] = preds_df["predicted_ccs"] + preds_df["shift"]
 
     else:
         shift_factor = calculate_ccs_shift(
@@ -208,7 +184,7 @@ def linear_calibration(
             per_charge=False,
             use_charge_state=use_charge_state,
         )
-        preds_df['predicted_ccs'] += shift_factor
+        preds_df["predicted_ccs"] += shift_factor
 
     LOGGER.info("CCS values calibrated.")
     return preds_df

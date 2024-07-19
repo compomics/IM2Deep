@@ -6,6 +6,7 @@ from deeplc import DeepLC
 from psm_utils.psm_list import PSMList
 
 from im2deep.calibrate import linear_calibration
+from im2deep.utils import ccs2im
 
 LOGGER = logging.getLogger(__name__)
 REFERENCE_DATASET_PATH = Path(__file__).parent / "reference_data" / "reference_ccs.zip"
@@ -23,6 +24,7 @@ def predict_ccs(
     use_single_model=True,
     n_jobs=None,
     write_output=True,
+    ion_mobility=False,
 ):
     """Run IM2Deep."""
     LOGGER.info("IM2Deep started.")
@@ -56,16 +58,34 @@ def predict_ccs(
         )
 
     if write_output:
-        LOGGER.info("Writing output file...")
-        output_file = open(output_file, "w")
-        output_file.write("modified_seq,charge,predicted CCS\n")
-        for peptidoform, charge, CCS in zip(
-            psm_list_pred_df["peptidoform"],
-            psm_list_pred_df["charge"],
-            psm_list_pred_df["predicted_ccs"],
-        ):
-            output_file.write(f"{peptidoform},{charge},{CCS}\n")
-        output_file.close()
+        if not ion_mobility:
+            LOGGER.info("Writing output file...")
+            output_file = open(output_file, "w")
+            output_file.write("modified_seq,charge,predicted CCS\n")
+            for peptidoform, charge, CCS in zip(
+                psm_list_pred_df["peptidoform"],
+                psm_list_pred_df["charge"],
+                psm_list_pred_df["predicted_ccs"],
+            ):
+                output_file.write(f"{peptidoform},{charge},{CCS}\n")
+            output_file.close()
+        else:
+            LOGGER.info("Converting CCS to IM values...")
+            psm_list_pred_df["predicted_im"] = ccs2im(
+                psm_list_pred_df["predicted_ccs"],
+                psm_list_pred_df["peptidoform"].apply(lambda x: x.theoretical_mz),
+                psm_list_pred_df["charge"],
+            )
+            LOGGER.info("Writing output file...")
+            output_file = open(output_file, "w")
+            output_file.write("modified_seq,charge,predicted IM\n")
+            for peptidoform, charge, IM in zip(
+                psm_list_pred_df["peptidoform"],
+                psm_list_pred_df["charge"],
+                psm_list_pred_df["predicted_im"],
+            ):
+                output_file.write(f"{peptidoform},{charge},{IM}\n")
+            output_file.close()
 
     LOGGER.info("IM2Deep finished!")
 
