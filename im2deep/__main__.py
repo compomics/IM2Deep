@@ -53,56 +53,56 @@ def setup_logging(passed_level):
 
 # Command line arguments TODO: Make config_parser script
 @click.command()
-@click.argument("psm_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("psm-file", type=click.Path(exists=True, dir_okay=False))
 @click.option(
     "-c",
-    "--calibration_file",
+    "--calibration-file",
     type=click.Path(exists=False),
     default=None,
     help="Calibration file name.",
 )
 @click.option(
     "-o",
-    "--output_file",
+    "--output-file",
     type=click.Path(exists=False),
     default=None,
     help="Output file name.",
 )
 @click.option(
     "-m",
-    "--model_name",
+    "--model-name",
     type=click.Choice(["tims"]),
     default="tims",
     help="Model name.",
 )
 @click.option(
     "-l",
-    "--log_level",
+    "--log-level",
     type=click.Choice(["debug", "info", "warning", "error", "critical"]),
     default="info",
     help="Logging level.",
 )
 @click.option(
     "-n",
-    "--n_jobs",
+    "--n-jobs",
     type=click.INT,
     default=None,
     help="Number of jobs to use for parallel processing.",
 )
 @click.option(
-    "--calibrate_per_charge",
+    "--calibrate-per-charge",
     type=click.BOOL,
     default=True,
     help="Calibrate CCS values per charge state. Default is True.",
 )
 @click.option(
-    "--use_charge_state",
+    "--use-charge-state",
     type=click.INT,
     default=2,
     help="Charge state to use for calibration. Only used if calibrate_per_charge is set to False.",
 )
 @click.option(
-    "--use_single_model",
+    "--use-single-model",
     type=click.BOOL,
     default=True,
     help="Use a single model for prediction. If False, an ensemble of models will be used, which may slightly improve prediction accuracy but increase runtimes. Default is True.",
