@@ -21,9 +21,7 @@ requires-python = ">=3.8"
 dependencies = [
     "click",
     "deeplc",
-    "deeplcretrainer",
     "psm_utils",
-    "tensorflow>=2.2,<2.13.0",
     "pandas",
     "numpy",
     "rich"
@@ -43,7 +41,7 @@ docs = [
 ]
 
 [project.urls]
-GitHub = "https://github.com/rodvrees/IM2Deep"
+GitHub = "https://github.com/CompOmics/IM2Deep"
 CompOmics = "https://www.compomics.com"
 
 [project.scripts]
