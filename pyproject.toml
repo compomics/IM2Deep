@@ -41,7 +41,7 @@ docs = [
 ]
 
 [project.urls]
-GitHub = "https://github.com/rodvrees/IM2Deep"
+GitHub = "https://github.com/CompOmics/IM2Deep"
 CompOmics = "https://www.compomics.com"
 
 [project.scripts]
