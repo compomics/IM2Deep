@@ -6,6 +6,7 @@ from deeplc import DeepLC
 from psm_utils.psm_list import PSMList
 
 from im2deep.calibrate import linear_calibration
+from im2deep.predict_multi import predict_multi
 
 LOGGER = logging.getLogger(__name__)
 REFERENCE_DATASET_PATH = Path(__file__).parent / "reference_data" / "reference_ccs.zip"
@@ -18,11 +19,14 @@ def predict_ccs(
     file_reference=REFERENCE_DATASET_PATH,
     output_file=None,
     model_name="tims",
+    multi=False,
     calibrate_per_charge=True,
     use_charge_state=2,
     use_single_model=True,
     n_jobs=None,
     write_output=True,
+    pred_df=None,
+    cal_df=None,
 ):
     """Run IM2Deep."""
     LOGGER.info("IM2Deep started.")
@@ -55,16 +59,42 @@ def predict_ccs(
             use_charge_state=use_charge_state,
         )
 
+    if multi:
+        LOGGER.info("Predicting multiconformer CCS values...")
+        pred_df = predict_multi(
+            pred_df,
+            cal_df,
+            output_file,
+            calibrate_per_charge,
+            use_charge_state,
+        )
+
     if write_output:
         LOGGER.info("Writing output file...")
         output_file = open(output_file, "w")
-        output_file.write("modified_seq,charge,predicted CCS\n")
-        for peptidoform, charge, CCS in zip(
-            psm_list_pred_df["peptidoform"],
-            psm_list_pred_df["charge"],
-            psm_list_pred_df["predicted_ccs"],
-        ):
-            output_file.write(f"{peptidoform},{charge},{CCS}\n")
+        if not multi:
+            output_file.write("modified_seq,charge,predicted CCS\n")
+            for peptidoform, charge, CCS in zip(
+                psm_list_pred_df["peptidoform"],
+                psm_list_pred_df["charge"],
+                psm_list_pred_df["predicted_ccs"],
+            ):
+                output_file.write(f"{peptidoform},{charge},{CCS}\n")
+        else:
+            output_file.write(
+                "modified_seq,charge,predicted CCS single,predicted CCS multi 1,predicted CCS multi 2\n"
+            )
+            for peptidoform, charge, CCS_single, CCS_multi_1, CCS_multi_2 in zip(
+                psm_list_pred_df["peptidoform"],
+                psm_list_pred_df["charge"],
+                psm_list_pred_df["predicted_ccs"],
+                pred_df["predicted_ccs_multi_1"],
+                pred_df["predicted_ccs_multi_2"],
+            ):
+                output_file.write(
+                    f"{peptidoform},{charge},{CCS_single},{CCS_multi_1},{CCS_multi_2}\n"
+                )
+
         output_file.close()
 
     LOGGER.info("IM2Deep finished!")

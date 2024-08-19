@@ -76,6 +76,13 @@ def setup_logging(passed_level):
     help="Model name.",
 )
 @click.option(
+    "-e",
+    "--multi",
+    default=False,
+    is_flag=True,
+    help="Use multi-conformer model in addition to classical model.",
+)
+@click.option(
     "-l",
     "--log_level",
     type=click.Choice(["debug", "info", "warning", "error", "critical"]),
@@ -112,6 +119,7 @@ def main(
     calibration_file: Optional[str] = None,
     output_file: Optional[str] = None,
     model_name: Optional[str] = "tims",
+    multi: Optional[bool] = False,
     log_level: Optional[str] = "info",
     n_jobs: Optional[int] = None,
     use_single_model: Optional[bool] = True,
@@ -174,7 +182,6 @@ def main(
             psm_list_cal = PSMList(psm_list=list_of_cal_psms)
             psm_list_cal_df = psm_list_cal.to_dataframe()
             psm_list_cal_df["ccs_observed"] = df_cal["CCS"]
-            del df_cal
 
         except IOError:
             LOGGER.error(
@@ -196,10 +203,13 @@ def main(
             psm_list_cal_df,
             output_file=output_file,
             model_name=model_name,
+            multi=multi,
             calibrate_per_charge=calibrate_per_charge,
             use_charge_state=use_charge_state,
             n_jobs=n_jobs,
             use_single_model=use_single_model,
+            pred_df=df_pred,
+            cal_df=df_cal,
         )
     except IM2DeepError as e:
         LOGGER.error(e)

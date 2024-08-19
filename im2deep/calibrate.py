@@ -155,7 +155,7 @@ def linear_calibration(
     calibration_dataset: pd.DataFrame,
     reference_dataset: pd.DataFrame,
     per_charge: bool = True,
-    use_charge_state: bool = None,
+    use_charge_state: int = None,
 ) -> pd.DataFrame:
     """
     Calibrate PSM df using linear calibration.
@@ -180,26 +180,32 @@ def linear_calibration(
 
     """
     LOGGER.info("Calibrating CCS values using linear calibration...")
-    calibration_dataset['sequence'] = calibration_dataset['peptidoform'].apply(lambda x: x.proforma.split("\\")[0])
-    calibration_dataset['charge'] = calibration_dataset['peptidoform'].apply(lambda x: x.precursor_charge)
+    calibration_dataset["sequence"] = calibration_dataset["peptidoform"].apply(
+        lambda x: x.proforma.split("\\")[0]
+    )
+    calibration_dataset["charge"] = calibration_dataset["peptidoform"].apply(
+        lambda x: x.precursor_charge
+    )
     # reference_dataset['sequence'] = reference_dataset['peptidoform'].apply(lambda x: x.split('/')[0])
-    reference_dataset['charge'] = reference_dataset['peptidoform'].apply(lambda x: int(x.split('/')[1]))
+    reference_dataset["charge"] = reference_dataset["peptidoform"].apply(
+        lambda x: int(x.split("/")[1])
+    )
 
     if per_charge:
-        LOGGER.info('Getting general shift factor')
+        LOGGER.info("Getting general shift factor")
         general_shift = calculate_ccs_shift(
             calibration_dataset,
             reference_dataset,
             per_charge=False,
             use_charge_state=use_charge_state,
         )
-        LOGGER.info('Getting shift factors per charge state')
+        LOGGER.info("Getting shift factors per charge state")
         shift_factor_dict = calculate_ccs_shift(
             calibration_dataset, reference_dataset, per_charge=True
         )
 
-        preds_df['shift'] = preds_df['charge'].map(shift_factor_dict).fillna(general_shift)
-        preds_df['predicted_ccs'] = preds_df['predicted_ccs'] + preds_df['shift']
+        preds_df["shift"] = preds_df["charge"].map(shift_factor_dict).fillna(general_shift)
+        preds_df["predicted_ccs"] = preds_df["predicted_ccs"] + preds_df["shift"]
 
     else:
         shift_factor = calculate_ccs_shift(
@@ -208,7 +214,7 @@ def linear_calibration(
             per_charge=False,
             use_charge_state=use_charge_state,
         )
-        preds_df['predicted_ccs'] += shift_factor
+        preds_df["predicted_ccs"] += shift_factor
 
     LOGGER.info("CCS values calibrated.")
     return preds_df
