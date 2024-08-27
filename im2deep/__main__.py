@@ -76,6 +76,13 @@ def setup_logging(passed_level):
     help="Model name.",
 )
 @click.option(
+    "-e",
+    "--multi",
+    default=False,
+    is_flag=True,
+    help="Use multi-conformer model in addition to classical model.",
+)
+@click.option(
     "-l",
     "--log-level",
     type=click.Choice(["debug", "info", "warning", "error", "critical"]),

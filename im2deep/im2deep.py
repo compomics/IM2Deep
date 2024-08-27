@@ -7,7 +7,10 @@ from psm_utils.psm_list import PSMList
 
 from im2deep.calibrate import linear_calibration
 from im2deep.predict_multi import predict_multi
+<<<<<<< HEAD
 from im2deep.utils import ccs2im
+=======
+>>>>>>> f84dfbaaf901c1bea31cd73ef70b2a75fce33368
 
 LOGGER = logging.getLogger(__name__)
 REFERENCE_DATASET_PATH = Path(__file__).parent / "reference_data" / "reference_ccs.zip"
@@ -26,7 +29,10 @@ def predict_ccs(
     use_single_model=True,
     n_jobs=None,
     write_output=True,
+<<<<<<< HEAD
     ion_mobility=False,
+=======
+>>>>>>> f84dfbaaf901c1bea31cd73ef70b2a75fce33368
     pred_df=None,
     cal_df=None,
 ):
@@ -72,6 +78,7 @@ def predict_ccs(
         )
 
     if write_output:
+<<<<<<< HEAD
         if not multi:
             if not ion_mobility:
                 LOGGER.info("Writing output file...")
@@ -143,6 +150,33 @@ def predict_ccs(
                     output_file.write(
                         f"{peptidoform},{charge},{IM_single},{IM_multi_1},{IM_multi_2}\n"
                     )
+=======
+        LOGGER.info("Writing output file...")
+        output_file = open(output_file, "w")
+        if not multi:
+            output_file.write("modified_seq,charge,predicted CCS\n")
+            for peptidoform, charge, CCS in zip(
+                psm_list_pred_df["peptidoform"],
+                psm_list_pred_df["charge"],
+                psm_list_pred_df["predicted_ccs"],
+            ):
+                output_file.write(f"{peptidoform},{charge},{CCS}\n")
+        else:
+            output_file.write(
+                "modified_seq,charge,predicted CCS single,predicted CCS multi 1,predicted CCS multi 2\n"
+            )
+            for peptidoform, charge, CCS_single, CCS_multi_1, CCS_multi_2 in zip(
+                psm_list_pred_df["peptidoform"],
+                psm_list_pred_df["charge"],
+                psm_list_pred_df["predicted_ccs"],
+                pred_df["predicted_ccs_multi_1"],
+                pred_df["predicted_ccs_multi_2"],
+            ):
+                output_file.write(
+                    f"{peptidoform},{charge},{CCS_single},{CCS_multi_1},{CCS_multi_2}\n"
+                )
+
+>>>>>>> f84dfbaaf901c1bea31cd73ef70b2a75fce33368
         output_file.close()
 
     LOGGER.info("IM2Deep finished!")

@@ -1,10 +1,14 @@
 from pathlib import Path
+<<<<<<< HEAD
 import numpy as np
+=======
+>>>>>>> f84dfbaaf901c1bea31cd73ef70b2a75fce33368
 
 MULTI_BACKBONE_PATH = (
     Path(__file__).parent / "models" / "TIMS_multi" / "Transfer_single_backbone.ckpt"
 )
 
+<<<<<<< HEAD
 
 def im2ccs(reverse_im, mz, charge, mass_gas=28.013, temp=31.85, t_diff=273.15):
     """
@@ -66,6 +70,8 @@ def ccs2im(ccs, mz, charge, mass_gas=28.013, temp=31.85, t_diff=273.15):
     return ((np.sqrt(reduced_mass * (temp + t_diff))) * ccs) / (SUMMARY_CONSTANT * charge)
 
 
+=======
+>>>>>>> f84dfbaaf901c1bea31cd73ef70b2a75fce33368
 multi_config = {
     "model_name": "IM2DeepMulti",
     "batch_size": 16,
