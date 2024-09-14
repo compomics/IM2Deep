@@ -33,7 +33,7 @@ def predict_ccs(
     if model_name == "tims":
         path_model = Path(__file__).parent / "models" / "TIMS"
 
-    path_model_list = list(path_model.glob("*.hdf5"))
+    path_model_list = list(path_model.glob("*.keras"))
     if use_single_model:
         LOGGER.debug("Using model {}".format(path_model_list[2]))
         path_model_list = [path_model_list[2]]
