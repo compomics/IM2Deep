@@ -93,7 +93,7 @@ def setup_logging(passed_level):
     "--calibrate_per_charge",
     type=click.BOOL,
     default=True,
-    help="Calibrate CCS values per charge state.",
+    help="Calibrate CCS values per charge state. Default is True.",
 )
 @click.option(
     "--use_charge_state",
@@ -105,7 +105,15 @@ def setup_logging(passed_level):
     "--use_single_model",
     type=click.BOOL,
     default=True,
-    help="Use a single model for prediction.",
+    help="Use a single model for prediction. If False, an ensemble of models will be used, which may slightly improve prediction accuracy but increase runtimes. Default is True.",
+)
+@click.option(
+    "-i",
+    "--ion-mobility",
+    type=click.BOOL,
+    default=False,
+    help="Output predictions in ion mobility (1/K0) instead of CCS. Default is False.",
+    is_flag=True,
 )
 def main(
     psm_file: str,
@@ -117,6 +125,7 @@ def main(
     use_single_model: Optional[bool] = True,
     calibrate_per_charge: Optional[bool] = True,
     use_charge_state: Optional[int] = 2,
+    ion_mobility: Optional[bool] = False,
 ):
     """Command line interface to IM2Deep."""
     setup_logging(log_level)
@@ -200,6 +209,7 @@ def main(
             use_charge_state=use_charge_state,
             n_jobs=n_jobs,
             use_single_model=use_single_model,
+            ion_mobility=ion_mobility,
         )
     except IM2DeepError as e:
         LOGGER.error(e)
