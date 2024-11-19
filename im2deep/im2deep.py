@@ -57,6 +57,14 @@ def predict_ccs(
             use_charge_state=use_charge_state,
         )
 
+    if ion_mobility:
+        LOGGER.info("Converting CCS to IM values...")
+        psm_list_pred_df["predicted_im"] = ccs2im(
+            psm_list_pred_df["predicted_ccs"],
+            psm_list_pred_df["peptidoform"].apply(lambda x: x.theoretical_mz),
+            psm_list_pred_df["charge"],
+        )
+
     if write_output:
         if not ion_mobility:
             LOGGER.info("Writing output file...")
@@ -70,12 +78,6 @@ def predict_ccs(
                 output_file.write(f"{peptidoform},{charge},{CCS}\n")
             output_file.close()
         else:
-            LOGGER.info("Converting CCS to IM values...")
-            psm_list_pred_df["predicted_im"] = ccs2im(
-                psm_list_pred_df["predicted_ccs"],
-                psm_list_pred_df["peptidoform"].apply(lambda x: x.theoretical_mz),
-                psm_list_pred_df["charge"],
-            )
             LOGGER.info("Writing output file...")
             output_file = open(output_file, "w")
             output_file.write("modified_seq,charge,predicted IM\n")
@@ -89,4 +91,7 @@ def predict_ccs(
 
     LOGGER.info("IM2Deep finished!")
 
-    return psm_list_pred_df["predicted_ccs"]
+    if not ion_mobility:
+        return psm_list_pred_df["predicted_ccs"]
+    else:
+        return psm_list_pred_df["predicted_im"]
