@@ -115,10 +115,12 @@ def setup_logging(passed_level):
     help="Use a single model for prediction. If False, an ensemble of models will be used, which may slightly improve prediction accuracy but increase runtimes. Default is True.",
 )
 @click.option(
+    "-i",
     "--ion-mobility",
     type=click.BOOL,
     default=False,
     help="Output predictions in ion mobility (1/K0) instead of CCS. Default is False.",
+    is_flag=True,
 )
 @click.option(
     "-e",
