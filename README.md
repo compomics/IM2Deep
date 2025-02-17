@@ -11,7 +11,7 @@ It is able to accurately predict CCS for modified peptides, even if the modifica
 Install with pip:
 `pip install im2deep`
 
-If you want to use the multi-output model for CCS prediction of multi-conformational peptide ions, use the following installation command:
+If you want to use the multi-output model for CCS prediction of multiconformational peptide ions, use the following installation command:
 `pip install 'im2deep[er]'`
 
 ## Usage
