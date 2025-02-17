@@ -51,6 +51,17 @@ def setup_logging(passed_level):
     )
 
 
+def check_optional_dependencies():
+    try:
+        import torch
+        import im2deeptrainer
+    except ImportError:
+        LOGGER.error(
+            "In order to run multiconformational precursor CCS predictions, IM2Deep requires the installation of 'torch' and 'im2deeptrainer'.\nPlease re-install IM2Deep with the optional dependencies by running 'pip install 'im2deep[er]'."
+        )
+        sys.exit(1)
+
+
 # Command line arguments TODO: Make config_parser script
 @click.command()
 @click.argument("psm-file", type=click.Path(exists=True, dir_okay=False))
@@ -159,7 +170,6 @@ def main(
         psm_list_pred = PSMList(psm_list=list_of_psms)
 
     else:
-        # psm_list_pred = read_file(file_pred)
         try:
             psm_list_pred = read_file(psm_file)
         except PSMUtilsIOException:

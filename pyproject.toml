@@ -24,7 +24,7 @@ dependencies = [
     "psm_utils",
     "pandas",
     "numpy",
-    "rich"
+    "rich",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +39,9 @@ docs = [
     "sphinx_rtd_theme",
     "sphinx-autobuild",
 ]
+er = [
+    "im2deeptrainer", 
+    "torch==2.3.0"]
 
 [project.urls]
 GitHub = "https://github.com/CompOmics/IM2Deep"
