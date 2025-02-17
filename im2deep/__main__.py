@@ -122,13 +122,6 @@ def setup_logging(passed_level):
     help="Output predictions in ion mobility (1/K0) instead of CCS. Default is False.",
     is_flag=True,
 )
-@click.option(
-    "-e",
-    "--multi",
-    default=False,
-    is_flag=True,
-    help="Use multi-conformer model in addition to classical model.",
-)
 def main(
     psm_file: str,
     calibration_file: Optional[str] = None,
