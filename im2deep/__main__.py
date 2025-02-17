@@ -18,8 +18,6 @@ from psm_utils.psm import PSM
 from psm_utils.psm_list import PSMList
 from rich.logging import RichHandler
 
-from im2deep._exceptions import IM2DeepError
-from im2deep.im2deep import predict_ccs
 
 # from im2deep.calibrate import linear_calibration
 
@@ -148,6 +146,12 @@ def main(
 ):
     """Command line interface to IM2Deep."""
     setup_logging(log_level)
+
+    if multi:
+        check_optional_dependencies()
+
+    from im2deep._exceptions import IM2DeepError
+    from im2deep.im2deep import predict_ccs
 
     with open(psm_file) as f:
         first_line_pred = f.readline().strip()

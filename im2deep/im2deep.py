@@ -6,7 +6,6 @@ from deeplc import DeepLC
 from psm_utils.psm_list import PSMList
 
 from im2deep.calibrate import linear_calibration
-from im2deep.predict_multi import predict_multi
 from im2deep.utils import ccs2im
 
 LOGGER = logging.getLogger(__name__)
@@ -62,6 +61,8 @@ def predict_ccs(
         )
 
     if multi:
+        from im2deep.predict_multi import predict_multi
+
         LOGGER.info("Predicting multiconformer CCS values...")
         pred_df = predict_multi(
             psm_list_pred,

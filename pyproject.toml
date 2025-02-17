@@ -23,7 +23,7 @@ dependencies = [
     "deeplc",
     "psm_utils",
     "pandas",
-    "numpy",
+    "numpy==1.26.0",
     "rich",
 ]
 
