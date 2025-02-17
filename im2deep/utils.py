@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 
 MULTI_BACKBONE_PATH = (
-    Path(__file__).parent / "models" / "TIMS_multi" / "Transfer_single_backbone.ckpt"
+    Path(__file__).parent / "models" / "TIMS_multi" / "multi_output_backbone.ckpt"
 )
 
 

@@ -64,18 +64,17 @@ def predict_ccs(
     if multi:
         LOGGER.info("Predicting multiconformer CCS values...")
         pred_df = predict_multi(
-            pred_df,
+            psm_list_pred,
             cal_df,
-            output_file,
             calibrate_per_charge,
             use_charge_state,
         )
 
     if write_output:
+        LOGGER.info("Writing output file...")
+        output_file = open(output_file, "w")
         if not multi:
             if not ion_mobility:
-                LOGGER.info("Writing output file...")
-                output_file = open(output_file, "w")
                 output_file.write("modified_seq,charge,predicted CCS\n")
                 for peptidoform, charge, CCS in zip(
                     psm_list_pred_df["peptidoform"],
@@ -102,7 +101,7 @@ def predict_ccs(
                     output_file.write(f"{peptidoform},{charge},{IM}\n")
                 output_file.close()
         else:
-            if not multi:
+            if not ion_mobility:
                 output_file.write(
                     "modified_seq,charge,predicted CCS single,predicted CCS multi 1,predicted CCS multi 2\n"
                 )

@@ -8,11 +8,12 @@ import numpy as np
 from im2deeptrainer.model import IM2DeepMultiTransfer
 from im2deeptrainer.extract_data import _get_matrices
 from im2deeptrainer.utils import FlexibleLossSorted
+
 from im2deep.utils import multi_config
 
 LOGGER = logging.getLogger(__name__)
-MULTI_CKPT_PATH = Path(__file__).parent / "models" / "TIMS_multi" / "TIMS_multi.ckpt"
-REFERENCE_DATASET_PATH = Path(__file__).parent / "reference_data" / "multi_reference.gz"
+MULTI_CKPT_PATH = Path(__file__).parent / "models" / "TIMS_multi" / "multi_output.ckpt"
+REFERENCE_DATASET_PATH = Path(__file__).parent / "reference_data" / "multi_reference_ccs.gz"
 
 
 def get_ccs_shift_multi(
@@ -153,6 +154,7 @@ def linear_calibration_multi(
             df_cal, reference_dataset, per_charge=False, use_charge_state=use_charge_state
         )
         LOGGER.info("Getting shift factors per charge state...")
+        df_pred["charge"] = df_pred["peptidoform"].apply(lambda x: x.precursor_charge)
         shift_factor_dict = calculate_ccs_shift_multi(df_cal, reference_dataset, per_charge=True)
 
         df_pred["shift_multi"] = df_pred["charge"].map(shift_factor_dict).fillna(general_shift)
@@ -174,14 +176,15 @@ def linear_calibration_multi(
     return df_pred
 
 
-def predict_multi(df_pred, df_cal, output_file, calibrate_per_charge, use_charge_state):
+def predict_multi(df_pred_psm_list, df_cal, calibrate_per_charge, use_charge_state):
     criterion = FlexibleLossSorted()
     model = IM2DeepMultiTransfer.load_from_checkpoint(
         MULTI_CKPT_PATH, config=multi_config, criterion=criterion
     )
 
-    df_pred["tr"] = 0  # Placeholder for DeepLC compatibility
-    matrices = _get_matrices(df_pred)
+    # df_pred["tr"] = 0  # Placeholder for DeepLC compatibility
+    # print(df_pred)
+    matrices = _get_matrices(df_pred_psm_list, inference=True)
 
     tensors = {}
     for key in matrices:
@@ -196,10 +199,12 @@ def predict_multi(df_pred, df_cal, output_file, calibrate_per_charge, use_charge
     with torch.no_grad():
         preds = []
         for index, batch in enumerate(dataloader):
-            prediction = model.predict_step(batch)
+            prediction = model.predict_step(batch, inference=True)
             preds.append(prediction)
         predictions = torch.cat(preds).numpy()
 
+    df_pred = df_pred_psm_list.to_dataframe()
+    
     df_pred["predicted_ccs_multi_1"] = predictions[:, 0]
     df_pred["predicted_ccs_multi_2"] = predictions[:, 1]
 
