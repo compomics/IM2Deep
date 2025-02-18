@@ -19,12 +19,15 @@ def predict_ccs(
     file_reference=REFERENCE_DATASET_PATH,
     output_file=None,
     model_name="tims",
+    multi=False,
     calibrate_per_charge=True,
     use_charge_state=2,
     use_single_model=True,
     n_jobs=None,
     write_output=True,
     ion_mobility=False,
+    pred_df=None,
+    cal_df=None,
 ):
     """Run IM2Deep."""
     LOGGER.info("IM2Deep started.")
@@ -57,37 +60,90 @@ def predict_ccs(
             use_charge_state=use_charge_state,
         )
 
-    if ion_mobility:
-        LOGGER.info("Converting CCS to IM values...")
-        psm_list_pred_df["predicted_im"] = ccs2im(
-            psm_list_pred_df["predicted_ccs"],
-            psm_list_pred_df["peptidoform"].apply(lambda x: x.theoretical_mz),
-            psm_list_pred_df["charge"],
+    if multi:
+        from im2deep.predict_multi import predict_multi
+
+        LOGGER.info("Predicting multiconformer CCS values...")
+        pred_df = predict_multi(
+            psm_list_pred,
+            cal_df,
+            calibrate_per_charge,
+            use_charge_state,
         )
 
     if write_output:
-        if not ion_mobility:
-            LOGGER.info("Writing output file...")
-            output_file = open(output_file, "w")
-            output_file.write("modified_seq,charge,predicted CCS\n")
-            for peptidoform, charge, CCS in zip(
-                psm_list_pred_df["peptidoform"],
-                psm_list_pred_df["charge"],
-                psm_list_pred_df["predicted_ccs"],
-            ):
-                output_file.write(f"{peptidoform},{charge},{CCS}\n")
-            output_file.close()
+        LOGGER.info("Writing output file...")
+        output_file = open(output_file, "w")
+        if not multi:
+            if not ion_mobility:
+                output_file.write("modified_seq,charge,predicted CCS\n")
+                for peptidoform, charge, CCS in zip(
+                    psm_list_pred_df["peptidoform"],
+                    psm_list_pred_df["charge"],
+                    psm_list_pred_df["predicted_ccs"],
+                ):
+                    output_file.write(f"{peptidoform},{charge},{CCS}\n")
+                output_file.close()
+            else:
+                LOGGER.info("Converting CCS to IM values...")
+                psm_list_pred_df["predicted_im"] = ccs2im(
+                    psm_list_pred_df["predicted_ccs"],
+                    psm_list_pred_df["peptidoform"].apply(lambda x: x.theoretical_mz),
+                    psm_list_pred_df["charge"],
+                )
+                LOGGER.info("Writing output file...")
+                output_file = open(output_file, "w")
+                output_file.write("modified_seq,charge,predicted IM\n")
+                for peptidoform, charge, IM in zip(
+                    psm_list_pred_df["peptidoform"],
+                    psm_list_pred_df["charge"],
+                    psm_list_pred_df["predicted_im"],
+                ):
+                    output_file.write(f"{peptidoform},{charge},{IM}\n")
+                output_file.close()
         else:
-            LOGGER.info("Writing output file...")
-            output_file = open(output_file, "w")
-            output_file.write("modified_seq,charge,predicted IM\n")
-            for peptidoform, charge, IM in zip(
-                psm_list_pred_df["peptidoform"],
-                psm_list_pred_df["charge"],
-                psm_list_pred_df["predicted_im"],
-            ):
-                output_file.write(f"{peptidoform},{charge},{IM}\n")
-            output_file.close()
+            if not ion_mobility:
+                output_file.write(
+                    "modified_seq,charge,predicted CCS single,predicted CCS multi 1,predicted CCS multi 2\n"
+                )
+                for peptidoform, charge, CCS_single, CCS_multi_1, CCS_multi_2 in zip(
+                    psm_list_pred_df["peptidoform"],
+                    psm_list_pred_df["charge"],
+                    psm_list_pred_df["predicted_ccs"],
+                    pred_df["predicted_ccs_multi_1"],
+                    pred_df["predicted_ccs_multi_2"],
+                ):
+                    output_file.write(
+                        f"{peptidoform},{charge},{CCS_single},{CCS_multi_1},{CCS_multi_2}\n"
+                    )
+            else:
+                LOGGER.info("Converting CCS to IM values...")
+                psm_list_pred_df["predicted_im_multi_1"] = ccs2im(
+                    pred_df["predicted_ccs_multi_1"],
+                    psm_list_pred_df["peptidoform"].apply(lambda x: x.theoretical_mz),
+                    psm_list_pred_df["charge"],
+                )
+                psm_list_pred_df["predicted_im_multi_2"] = ccs2im(
+                    pred_df["predicted_ccs_multi_2"],
+                    psm_list_pred_df["peptidoform"].apply(lambda x: x.theoretical_mz),
+                    psm_list_pred_df["charge"],
+                )
+                LOGGER.info("Writing output file...")
+                output_file = open(output_file, "w")
+                output_file.write(
+                    "modified_seq,charge,predicted IM single,predicted IM multi 1,predicted IM multi 2\n"
+                )
+                for peptidoform, charge, IM_single, IM_multi_1, IM_multi_2 in zip(
+                    psm_list_pred_df["peptidoform"],
+                    psm_list_pred_df["charge"],
+                    psm_list_pred_df["predicted_im"],
+                    psm_list_pred_df["predicted_im_multi_1"],
+                    psm_list_pred_df["predicted_im_multi_2"],
+                ):
+                    output_file.write(
+                        f"{peptidoform},{charge},{IM_single},{IM_multi_1},{IM_multi_2}\n"
+                    )
+        output_file.close()
 
     LOGGER.info("IM2Deep finished!")
 

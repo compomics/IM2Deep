@@ -125,7 +125,7 @@ def linear_calibration(
     calibration_dataset: pd.DataFrame,
     reference_dataset: pd.DataFrame,
     per_charge: bool = True,
-    use_charge_state: bool = None,
+    use_charge_state: int = None,
 ) -> pd.DataFrame:
     """
     Calibrate PSM df using linear calibration.

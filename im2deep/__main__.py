@@ -18,8 +18,6 @@ from psm_utils.psm import PSM
 from psm_utils.psm_list import PSMList
 from rich.logging import RichHandler
 
-from im2deep._exceptions import IM2DeepError
-from im2deep.im2deep import predict_ccs
 
 # from im2deep.calibrate import linear_calibration
 
@@ -51,58 +49,76 @@ def setup_logging(passed_level):
     )
 
 
+def check_optional_dependencies():
+    try:
+        import torch
+        import im2deeptrainer
+    except ImportError:
+        LOGGER.error(
+            "In order to run multiconformational precursor CCS predictions, IM2Deep requires the installation of 'torch' and 'im2deeptrainer'.\nPlease re-install IM2Deep with the optional dependencies by running 'pip install 'im2deep[er]'."
+        )
+        sys.exit(1)
+
+
 # Command line arguments TODO: Make config_parser script
 @click.command()
-@click.argument("psm_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("psm-file", type=click.Path(exists=True, dir_okay=False))
 @click.option(
     "-c",
-    "--calibration_file",
+    "--calibration-file",
     type=click.Path(exists=False),
     default=None,
     help="Calibration file name.",
 )
 @click.option(
     "-o",
-    "--output_file",
+    "--output-file",
     type=click.Path(exists=False),
     default=None,
     help="Output file name.",
 )
 @click.option(
     "-m",
-    "--model_name",
+    "--model-name",
     type=click.Choice(["tims"]),
     default="tims",
     help="Model name.",
 )
 @click.option(
+    "-e",
+    "--multi",
+    default=False,
+    is_flag=True,
+    help="Use multi-conformer model in addition to classical model.",
+)
+@click.option(
     "-l",
-    "--log_level",
+    "--log-level",
     type=click.Choice(["debug", "info", "warning", "error", "critical"]),
     default="info",
     help="Logging level.",
 )
 @click.option(
     "-n",
-    "--n_jobs",
+    "--n-jobs",
     type=click.INT,
     default=None,
     help="Number of jobs to use for parallel processing.",
 )
 @click.option(
-    "--calibrate_per_charge",
+    "--calibrate-per-charge",
     type=click.BOOL,
     default=True,
     help="Calibrate CCS values per charge state. Default is True.",
 )
 @click.option(
-    "--use_charge_state",
+    "--use-charge-state",
     type=click.INT,
     default=2,
     help="Charge state to use for calibration. Only used if calibrate_per_charge is set to False.",
 )
 @click.option(
-    "--use_single_model",
+    "--use-single-model",
     type=click.BOOL,
     default=True,
     help="Use a single model for prediction. If False, an ensemble of models will be used, which may slightly improve prediction accuracy but increase runtimes. Default is True.",
@@ -120,6 +136,7 @@ def main(
     calibration_file: Optional[str] = None,
     output_file: Optional[str] = None,
     model_name: Optional[str] = "tims",
+    multi: Optional[bool] = False,
     log_level: Optional[str] = "info",
     n_jobs: Optional[int] = None,
     use_single_model: Optional[bool] = True,
@@ -129,6 +146,12 @@ def main(
 ):
     """Command line interface to IM2Deep."""
     setup_logging(log_level)
+
+    if multi:
+        check_optional_dependencies()
+
+    from im2deep._exceptions import IM2DeepError
+    from im2deep.im2deep import predict_ccs
 
     with open(psm_file) as f:
         first_line_pred = f.readline().strip()
@@ -151,7 +174,6 @@ def main(
         psm_list_pred = PSMList(psm_list=list_of_psms)
 
     else:
-        # psm_list_pred = read_file(file_pred)
         try:
             psm_list_pred = read_file(psm_file)
         except PSMUtilsIOException:
@@ -183,7 +205,6 @@ def main(
             psm_list_cal = PSMList(psm_list=list_of_cal_psms)
             psm_list_cal_df = psm_list_cal.to_dataframe()
             psm_list_cal_df["ccs_observed"] = df_cal["CCS"]
-            del df_cal
 
         except IOError:
             LOGGER.error(
@@ -205,11 +226,14 @@ def main(
             psm_list_cal_df,
             output_file=output_file,
             model_name=model_name,
+            multi=multi,
             calibrate_per_charge=calibrate_per_charge,
             use_charge_state=use_charge_state,
             n_jobs=n_jobs,
             use_single_model=use_single_model,
             ion_mobility=ion_mobility,
+            pred_df=df_pred,
+            cal_df=df_cal,
         )
     except IM2DeepError as e:
         LOGGER.error(e)
