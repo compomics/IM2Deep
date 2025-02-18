@@ -23,7 +23,7 @@ If you want to calibrate your predictions (HIGHLY recommended), please provide a
 ```sh
 im2deep <path/to/peptide_file.csv> --calibration-file <path/to/peptide_file_with_CCS.csv>
 ```
-To use the multi-output prediction model on top of the original model, provide the -e flag:
+To use the multi-output prediction model on top of the original model, provide the -e flag (make sure you have the optional dependencies installed!):
 ```sh
 im2deep <path/to/peptide_file.csv> --calibration-file <path/to/peptide_file_with_CCS.csv> -e
 ```
