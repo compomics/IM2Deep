@@ -54,3 +54,14 @@ DEELIHLDGK,,2,383.8693416055445
 IPQEKCILQTDVK,5|Butyryl|6|Carbamidomethyl,3,516.2079366048176
 ```
 
+## Citing
+If you use IM2Deep within the context of [(TI)MS<sup>2</sup>Rescore](https://github.com/compomics/ms2rescore), please cite the following:
+> **TIMS²Rescore: A DDA-PASEF optimized data-driven rescoring pipeline based on MS²Rescore.**
+> Arthur Declercq*, Robbe Devreese*, Jonas Scheid, Caroline Jachmann, Tim Van Den Bossche, Annica Preikschat, David Gomez-Zepeda, Jeewan Babu Rijal, Aurélie Hirschler, Jonathan R Krieger, Tharan Srikumar, George Rosenberger, Dennis Trede, Christine Carapito, Stefan Tenzer, Juliane S Walz, Sven Degroeve, Robbin Bouwmeester, Lennart Martens, and Ralf Gabriels.
+> _Journal of Proteome Research_ (2025) [doi:10.1021/acs.jproteome.4c00609](https://doi.org/10.1021/acs.jproteome.4c00609) <span class="__dimensions_badge_embed__" data-doi="10.1021/acs.jproteome.4c00609" data-hide-zero-citations="true" data-style="small_rectangle"></span>
+
+In other cases, please cite the following:
+
+**UPCOMING**
+
+
