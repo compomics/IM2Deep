@@ -61,7 +61,9 @@ If you use IM2Deep within the context of [(TI)MS<sup>2</sup>Rescore](https://git
 > _Journal of Proteome Research_ (2025) [doi:10.1021/acs.jproteome.4c00609](https://doi.org/10.1021/acs.jproteome.4c00609) <span class="__dimensions_badge_embed__" data-doi="10.1021/acs.jproteome.4c00609" data-hide-zero-citations="true" data-style="small_rectangle"></span>
 
 In other cases, please cite the following:
+> **Collisional cross-section prediction for multiconformational peptide ions with IM2Deep.**
+> Robbe Devreese, Alireza Nameni, Arthur Declercq, Emmy Terryn, Ralf Gabriels, Francis Impens, Kris Gevaert, Lennart Martens, Robbin Bouwmeester.
+> _bioRXiv_ (2025) [doi:10.1101/2025.02.18.638865v1](https://www.biorxiv.org/content/10.1101/2025.02.18.638865v1)
 
-**UPCOMING**
 
 
