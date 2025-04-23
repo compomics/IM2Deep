@@ -20,7 +20,7 @@ dynamic = ["version"]
 requires-python = ">=3.10"
 dependencies = [
     "click",
-    "deeplc",
+    "deeplc<4",
     "psm_utils",
     "pandas",
     "numpy==1.26.0",
