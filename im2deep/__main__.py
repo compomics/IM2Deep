@@ -217,6 +217,7 @@ def main(
             "No calibration file found. Proceeding without calibration. Calibration is HIGHLY recommended for accurate CCS prediction."
         )
         psm_list_cal_df = None
+        df_cal = None
 
     if not output_file:
         output_file = Path(psm_file).parent / (Path(psm_file).stem + "_IM2Deep-predictions.csv")
